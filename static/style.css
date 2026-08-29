@@ -347,3 +347,29 @@ input::placeholder {
   .ledger::before { display: none; }
   .ledger__entry { border-bottom: 1px dashed var(--rule); }
 }
+
+/* Expense breakdown */
+.expense-breakdown {
+  max-width: 100%;
+  margin: 1.5rem auto 0;
+  padding: 0 1.5rem;
+}
+.expense-breakdown__inner {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  box-shadow: 0 1px 0 rgba(43,33,24,0.05), 0 12px 30px -18px rgba(43,33,24,0.35);
+  padding: 1.6rem 1.8rem 1.9rem;
+  animation: fade-in 0.35s ease;
+}
+.expense-breakdown .table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.expense-breakdown table.ledger-table {
+  min-width: 720px;
+  margin-bottom: 0;
+}
+@media (max-width: 780px) {
+  .expense-breakdown { padding: 0; }
+}
