@@ -12,7 +12,7 @@ tips = {
 }
 
 
-def compute_per_person(income, rent, utilities, food, transport, other,
+def compute_per_person(income, rent, utilities, food, security, other,
                         roommates, split_method):
 
     if roommates is None:
@@ -82,11 +82,11 @@ def compute_per_person(income, rent, utilities, food, transport, other,
         rent_share = round(rent * frac, 2)
         utilities_share = round(utilities * frac, 2)
         food_share = round(food * frac, 2)
-        transport_share = round(transport * frac, 2)
+        security_share = round(security * frac, 2)
         other_share = round(other * frac, 2)
 
         total_expenses = round(
-            rent_share + utilities_share + food_share + transport_share + other_share,
+            rent_share + utilities_share + food_share + security_share + other_share,
             2,
         )
 
@@ -96,7 +96,7 @@ def compute_per_person(income, rent, utilities, food, transport, other,
             "rent_share": rent_share,
             "utilities_share": utilities_share,
             "food_share": food_share,
-            "transport_share": transport_share,
+            "security_share": security_share,
             "other_share": other_share,
             "total_expenses": total_expenses,
             "rent_percentage": None,
@@ -152,7 +152,7 @@ def save_report(per_person, split_method):
         file.write("  Rent share: \u20b9" + str(person["rent_share"]) + "\n")
         file.write("  Utilities share: \u20b9" + str(person["utilities_share"]) + "\n")
         file.write("  Food share: \u20b9" + str(person["food_share"]) + "\n")
-        file.write("  Transport share: \u20b9" + str(person["transport_share"]) + "\n")
+        file.write("  security share: \u20b9" + str(person["security_share"]) + "\n")
         file.write("  Other share: \u20b9" + str(person["other_share"]) + "\n")
         file.write("  Total expenses: \u20b9" + str(person["total_expenses"]) + "\n")
 
@@ -183,7 +183,7 @@ def calculate():
     rent = int(data["rent"])
     utilities = int(data["utilities"])
     food = int(data["food"])
-    transport = int(data["transport"])
+    security = int(data["security"])
     other = int(data["other"])
 
     if income <= 0:
@@ -200,7 +200,7 @@ def calculate():
         roommates = None
 
     per_person = compute_per_person(
-        income, rent, utilities, food, transport, other,
+        income, rent, utilities, food, security, other,
         roommates, split_method,
     )
 
