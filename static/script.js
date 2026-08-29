@@ -3,12 +3,17 @@ const hasRoommatesBox = document.getElementById("has-roommates");
 const roommatesBlock = document.getElementById("roommates-block");
 const roommateRows = document.getElementById("roommate-rows");
 const addRoommateBtn = document.getElementById("add-roommate");
-
+// const addExpenseBox = document.getElementById("Expense")
 const emptyState = document.getElementById("empty-state");
 const errorBox = document.getElementById("error-box");
 const resultBox = document.getElementById("result");
 const stampEl = document.getElementById("stamp");
 const submitBtn = form.querySelector(".btn-stamp-action");
+const showExpenseBtn = document.getElementById("show-expense-btn");
+const expenseBreakdownBox = document.getElementById("Expense");
+const expenseBreakdownBody = document.querySelector("#expense-breakdown-table tbody");
+
+let lastResult = null;
 
 function currency(n) {
   const num = Number(n) || 0;
@@ -33,7 +38,13 @@ hasRoommatesBox.addEventListener("change", () => {
     addRoommateRow();
   }
 });
-
+// function addExpenseBox() {
+//   const row = document.createElement('div');
+//   row.className = "expenseBox"
+//   row.innerHTML = `
+//     <p>Roshan</p>
+//   `;
+// }
 addRoommateBtn.addEventListener("click", addRoommateRow);
 
 function collectRoommates() {
@@ -93,10 +104,17 @@ function showError(message) {
   errorBox.classList.remove("hidden");
   resultBox.classList.add("hidden");
   emptyState.classList.add("hidden");
+  lastResult = null;
+  expenseBreakdownBox.classList.add("hidden");
+  showExpenseBtn.textContent = "Show Expense Breakdown";
 }
 
 function renderResult(data) {
   const { affordability, per_person } = data;
+
+  lastResult = data;
+  expenseBreakdownBox.classList.add("hidden");
+  showExpenseBtn.textContent = "Show Expense Breakdown";
 
   emptyState.classList.add("hidden");
   errorBox.classList.add("hidden");
@@ -135,3 +153,42 @@ function renderResult(data) {
     splitSection.classList.add("hidden");
   }
 }
+
+function renderExpenseBreakdown(per_person) {
+  expenseBreakdownBody.innerHTML = "";
+
+  per_person.forEach((person) => {
+    const hasIncome = person.income !== null && person.income !== undefined;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${person.name}</td>
+      <td class="num">${hasIncome ? currency(person.income) : "—"}</td>
+      <td class="num">${currency(person.rent_share)}</td>
+      <td class="num">${currency(person.utilities_share)}</td>
+      <td class="num">${currency(person.food_share)}</td>
+      <td class="num">${currency(person.transport_share)}</td>
+      <td class="num">${currency(person.other_share)}</td>
+      <td class="num">${currency(person.total_expenses)}</td>
+      <td class="num">${hasIncome ? person.rent_percentage + "%" : "—"}</td>
+      <td class="num">${hasIncome ? currency(person.remaining) : "—"}</td>
+      <td>${person.status || "—"}</td>
+    `;
+    expenseBreakdownBody.appendChild(tr);
+  });
+}
+
+showExpenseBtn.addEventListener("click", () => {
+  if (!lastResult) return;
+
+  const isHidden = expenseBreakdownBox.classList.contains("hidden");
+
+  if (isHidden) {
+    renderExpenseBreakdown(lastResult.per_person);
+    expenseBreakdownBox.classList.remove("hidden");
+    showExpenseBtn.textContent = "Hide Expense Breakdown";
+    expenseBreakdownBox.scrollIntoView({ behavior: "smooth", block: "start" });
+  } else {
+    expenseBreakdownBox.classList.add("hidden");
+    showExpenseBtn.textContent = "Show Expense Breakdown";
+  }
+});
