@@ -65,7 +65,7 @@ form.addEventListener("submit", async (e) => {
     rent: document.getElementById("rent").value,
     utilities: document.getElementById("utilities").value,
     food: document.getElementById("food").value,
-    transport: document.getElementById("transport").value,
+    security: document.getElementById("security").value,
     other: document.getElementById("other").value,
   };
 
@@ -92,7 +92,7 @@ form.addEventListener("submit", async (e) => {
 
     renderResult(data);
   } catch (err) {
-    showError("Could not reach the server. Is the Flask app running?");
+    showError("Please Fill In the Details!!!");
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = "Calculate";
@@ -166,7 +166,7 @@ function renderExpenseBreakdown(per_person) {
       <td class="num">${currency(person.rent_share)}</td>
       <td class="num">${currency(person.utilities_share)}</td>
       <td class="num">${currency(person.food_share)}</td>
-      <td class="num">${currency(person.transport_share)}</td>
+      <td class="num">${currency(person.security_share)}</td>
       <td class="num">${currency(person.other_share)}</td>
       <td class="num">${currency(person.total_expenses)}</td>
       <td class="num">${hasIncome ? person.rent_percentage + "%" : "—"}</td>
