@@ -102,7 +102,7 @@
           <tbody>
             <tr><td>Rent, share of income</td><td id="r-percentage" class="num">—</td></tr>
             <tr><td>Total monthly expenses</td><td id="r-total" class="num">—</td></tr>
-            <tr><td>Remaining after savings goal</td><td id="r-remaining" class="num">—</td></tr>
+            <tr><td>Remaining Balance</td><td id="r-remaining" class="num">—</td></tr>
           </tbody>
         </table>
 
@@ -127,6 +127,7 @@
         <p class="autosave-note">✓ Entered into Monthly_Expenses_report.txt</p>
 
         <div class="actions">
+          <button type="button" id="show-expense-btn" class="btn-ghost">Show Expense Breakdown</button>
           <a href="/download-report" id="download-link" class="btn-ghost">Download report</a>
         </div>
       </div>
@@ -134,6 +135,33 @@
 
   </main>
 
+</div>
+<div id="Expense" class="expense-breakdown hidden">
+  <div class="expense-breakdown__inner">
+    <div class="entry-head">
+      <span class="entry-head__title">Expense Breakdown</span>
+    </div>
+    <div class="table-scroll">
+      <table class="ledger-table" id="expense-breakdown-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th class="num">Income</th>
+            <th class="num">Rent share</th>
+            <th class="num">Utilities share</th>
+            <th class="num">Food share</th>
+            <th class="num">Transport share</th>
+            <th class="num">Other share</th>
+            <th class="num">Total expenses</th>
+            <th class="num">Rent % of income</th>
+            <th class="num">Remaining</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <script src="/static/script.js"></script>
