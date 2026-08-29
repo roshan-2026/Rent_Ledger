@@ -16,6 +16,9 @@
 body {
   margin: 0;
   background: var(--paper-dim);
+  background-image: linear-gradient(var(--rule) 0.1px, transparent 0.5px);
+  color: var(--ink);
+  background-size: 100% 2.2rem;
   font-family: 'Inter', sans-serif;
   font-size: 16px;
   line-height: 1.5;
@@ -148,7 +151,7 @@ select {
   cursor: pointer;
 }
 input::placeholder {
-  opacity: 0.4;
+  opacity: 0.7;
 }
 
 .divider {
@@ -369,6 +372,19 @@ input::placeholder {
 .expense-breakdown table.ledger-table {
   min-width: 720px;
   margin-bottom: 0;
+}
+.footer{
+  border: 1px solid black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 25px;
+  width: 100%;
+  background:linear-gradient(black, grey);
+  color: white;
+  text-align: left;
+  font-size: x-small;
+
 }
 @media (max-width: 780px) {
   .expense-breakdown { padding: 0; }
