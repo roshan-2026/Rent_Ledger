@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rent Ledger — Affordability & Roommate Splitter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="masthead__mark">₹</div>
+    <div class="masthead__text">
+      <h1>Rent Ledger</h1>
+      <p class="masthead__sub">Affordability check &amp; roommate cost splitter</p>
+    </div>
+  </header>
+
+  <main class="ledger">
+
+    <!-- LEFT: ENTRY SIDE -->
+    <section class="ledger__entry" aria-label="Enter your monthly figures">
+      <div class="entry-head">
+        <span class="entry-head__label">Entry No. 01</span>
+        <span class="entry-head__title">Monthly Figures</span>
+      </div>
+
+      <form id="calc-form">
+        <div class="field-row">
+          <label for="rent">Rent</label>
+          <div class="field-input"><span>₹</span><input type="number" id="rent" min="0" step="any" placeholder="15000" required></div>
+        </div>
+        <hr>
+        <div class="field-row">
+          <label for="income">Monthly income (Your)</label>
+          <div class="field-input"><span>₹</span><input type="number" id="income" min="1" step="any" placeholder="50000" required></div>
+        </div>
+        <div class="field-row">
+          <label for="utilities">Utilities (Electricity, Water, Wifi, etc..)</label>
+          <div class="field-input"><span>₹</span><input type="number" id="utilities" min="0" step="any" placeholder="0" value="0"></div>
+        </div>
+        <div class="field-row">
+          <label for="food">Food</label>
+          <div class="field-input"><span>₹</span><input type="number" id="food" min="0" step="any" placeholder="0" value="0"></div>
+        </div>
+        <div class="field-row">
+          <label for="security">Security Deposit</label>
+          <div class="field-input"><span>₹</span><input type="number" id="security" min="0" step="any" placeholder="0" value="0"></div>
+        </div>
+        <div class="field-row">
+          <label for="other">Other expenses</label>
+          <div class="field-input"><span>₹</span><input type="number" id="other" min="0" step="any" placeholder="0" value="0"></div>
+        </div>
+
+        <div class="divider" role="separator"></div>
+
+        <div class="roommates-toggle">
+          <label class="check">
+            <input type="checkbox" id="has-roommates">
+            <span>Split rent &amp; utilities with roommates</span>
+          </label>
+        </div>
+        
+        <div id="roommates-block" class="roommates-block hidden">
+          <div class="field-row">
+            <label for="split-method">Split method</label>
+            <select id="split-method">
+              <option value="equal">Equal split</option>
+              <option value="income">By income share</option>
+            </select>
+          </div>
+
+          <div id="roommate-rows" class="roommate-rows"></div>
+
+          <button type="button" id="add-roommate" class="btn-ghost">+ Add roommate</button>
+        </div>
+
+        <button type="submit" class="btn-stamp-action">Calculate</button>
+      </form>
+    </section>
+
+    <!-- RIGHT: RESULT SIDE -->
+    <section class="ledger__result" aria-label="Results">
+      <div class="entry-head">
+        <span class="entry-head__title">Statement</span>
+      </div>
+
+      <div id="empty-state" class="empty-state">
+        <p>Fill in your figures and press <strong>Calculate</strong>.<br>Your statement will be entered here.</p>
+      </div>
+
+      <div id="error-box" class="error-box hidden"></div>
+
+      <div id="result" class="result hidden">
+        <div class="stamp-wrap">
+          <div id="stamp" class="stamp">AFFORDABLE</div>
+        </div>
+
+        <table class="ledger-table">
+          <tbody>
+            <tr><td>Rent, share of income</td><td id="r-percentage" class="num">—</td></tr>
+            <tr><td>Total monthly expenses</td><td id="r-total" class="num">—</td></tr>
+            <tr><td>Remaining Balance</td><td id="r-remaining" class="num">—</td></tr>
+          </tbody>
+        </table>
+
+        <p id="r-tip" class="tip"></p>
+
+        <div id="split-section" class="split-section hidden">
+          <h3>Individual breakdown</h3>
+          <table class="ledger-table" id="split-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th class="num">Income</th>
+                <th class="num">Rent % of income</th>
+                <th class="num">Total expenses</th>
+                <th class="num">Remaining</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <p class="autosave-note">✓ Report ready for export</p>
+
+        <div class="actions">
+          <button type="button" id="show-expense-btn" class="btn-ghost">Show Expense Breakdown</button>
+          <button type="button" id="download-report-btn" class="btn-ghost">Download report</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+</div>
+<div id="Expense" class="expense-breakdown hidden">
+  <div class="expense-breakdown__inner">
+    <div class="entry-head">
+      <span class="entry-head__title">Expense Breakdown</span>
+    </div>
+    <div class="table-scroll">
+      <table class="ledger-table" id="expense-breakdown-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th class="num">Income</th>
+            <th class="num">Rent share</th>
+            <th class="num">Utilities share</th>
+            <th class="num">Food share</th>
+            <th class="num">Security share</th>
+            <th class="num">Other share</th>
+            <th class="num">Total expenses</th>
+            <th class="num">Rent % of income</th>
+            <th class="num">Remaining</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="footer">
+  <p>Future updates include the amount &amp; bill paid by respective roommates &amp; their expense record will be logged respectively.</p>
+</div>
+<script src="static/script.js"></script>
+</body>
+</html>
