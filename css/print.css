@@ -1,0 +1,53 @@
+
+@media print {
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Completely remove all web UI sections from the print layout tree */
+  .site-header,
+  .hero-section,
+  .explainer-section,
+  .role-active-banner,
+  .form-section,
+  .calculate-bar,
+  .results-section,
+  .summary-banner,
+  .stay-meta-box,
+  .breakdown-grid,
+  .export-toolbar,
+  #role-picker-container,
+  #setup-form-section {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Target dedicated print mount container */
+  #standalone-invoice-document {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    page-break-after: avoid !important;
+  }
+
+  .invoice-page {
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    page-break-after: avoid !important;
+  }
+}

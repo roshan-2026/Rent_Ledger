@@ -1,0 +1,164 @@
+/* ==========================================================================
+   Rent & Utility Split Manager - Desktop & Laptop Stylesheet (>= 1025px)
+   Loaded conditionally via media="(min-width: 1025px)"
+   ========================================================================== */
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+/* Header */
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+
+.logo-title {
+  font-size: 1.3rem;
+}
+
+/* Hero Section */
+.hero-section {
+  padding: 40px 0 28px;
+}
+
+.hero-title {
+  font-size: 2.35rem;
+  letter-spacing: -0.03em;
+}
+
+.role-picker {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  max-width: 820px;
+}
+
+.role-card {
+  padding: 26px 24px;
+}
+
+/* Explainer & Simulator */
+.explainer-section {
+  margin: 40px 0 54px;
+}
+
+.simulator-box {
+  padding: 28px;
+}
+
+.simulator-grid,
+.sim-grid {
+  grid-template-columns: 1.15fr 1fr;
+  gap: 28px;
+}
+
+.sim-roommates-picker,
+.sim-rm-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.features-grid {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+/* Room Setup Form */
+.card-header {
+  padding: 20px 28px;
+}
+
+.card-body {
+  padding: 28px;
+}
+
+.form-grid {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.quick-rooms-selector {
+  display: flex;
+  gap: 12px;
+}
+
+.occupancy-prompt-box {
+  padding: 16px 22px;
+}
+
+/* Results Section */
+.summary-banner {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+.summary-stat-card {
+  padding: 20px;
+}
+
+.stat-value {
+  font-size: 1.45rem;
+}
+
+.breakdown-grid {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.person-card-header {
+  padding: 18px 24px;
+}
+
+.itemized-table td {
+  padding: 11px 22px;
+}
+
+.payment-box {
+  padding: 18px 24px;
+}
+
+.add-tx-row {
+  grid-template-columns: 1.1fr 1.1fr 1fr auto;
+  gap: 8px;
+}
+
+/* Export Toolbar */
+.export-toolbar {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 28px;
+}
+
+.export-buttons-group,
+.export-buttons {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: nowrap;
+}
+
+.btn-export {
+  padding: 12px 18px;
+  min-height: 48px;
+  gap: 8px;
+  font-weight: 700;
+}

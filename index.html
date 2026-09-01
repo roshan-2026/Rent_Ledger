@@ -3,172 +3,373 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rent Ledger — Affordability & Roommate Splitter</title>
+  <title>Rent & Utility Split Manager | Smart Bill Splitter</title>
+  <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="static/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Modular Conditional Stylesheets (Loads dedicated stylesheet per device screen) -->
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/mobile.css" media="(max-width: 767px)">
+  <link rel="stylesheet" href="css/tablet.css" media="(min-width: 768px) and (max-width: 1024px)">
+  <link rel="stylesheet" href="css/desktop.css" media="(min-width: 1025px)">
+  <link rel="stylesheet" href="css/print.css" media="print">
+  <!-- html2pdf.js for client-side PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
-<div class="page">
-
-  <header class="masthead">
-    <div class="masthead__mark">₹</div>
-    <div class="masthead__text">
-      <h1>Rent Ledger</h1>
-      <p class="masthead__sub">Affordability check &amp; roommate cost splitter</p>
-    </div>
-  </header>
-
-  <main class="ledger">
-
-    <!-- LEFT: ENTRY SIDE -->
-    <section class="ledger__entry" aria-label="Enter your monthly figures">
-      <div class="entry-head">
-        <span class="entry-head__label">Entry No. 01</span>
-        <span class="entry-head__title">Monthly Figures</span>
-      </div>
-
-      <form id="calc-form">
-        <div class="field-row">
-          <label for="rent">Rent</label>
-          <div class="field-input"><span>₹</span><input type="number" id="rent" min="0" step="any" placeholder="15000" required></div>
-        </div>
-        <hr>
-        <div class="field-row">
-          <label for="income">Monthly income (Your)</label>
-          <div class="field-input"><span>₹</span><input type="number" id="income" min="1" step="any" placeholder="50000" required></div>
-        </div>
-        <div class="field-row">
-          <label for="utilities">Utilities (Electricity, Water, Wifi, etc..)</label>
-          <div class="field-input"><span>₹</span><input type="number" id="utilities" min="0" step="any" placeholder="0" value="0"></div>
-        </div>
-        <div class="field-row">
-          <label for="food">Food</label>
-          <div class="field-input"><span>₹</span><input type="number" id="food" min="0" step="any" placeholder="0" value="0"></div>
-        </div>
-        <div class="field-row">
-          <label for="security">Security Deposit</label>
-          <div class="field-input"><span>₹</span><input type="number" id="security" min="0" step="any" placeholder="0" value="0"></div>
-        </div>
-        <div class="field-row">
-          <label for="other">Other expenses</label>
-          <div class="field-input"><span>₹</span><input type="number" id="other" min="0" step="any" placeholder="0" value="0"></div>
+  <!-- Site Header -->
+  <header class="site-header">
+    <div class="container">
+      <div class="header-inner">
+        <div class="logo-area">
+          <div class="logo-icon">🏠</div>
+          <div>
+            <h1 class="logo-title">RentSplit Pro</h1>
+            <p class="logo-subtitle">Smart Room & Person-Wise Rent Split Calculator</p>
+          </div>
         </div>
 
-        <div class="divider" role="separator"></div>
-
-        <div class="roommates-toggle">
-          <label class="check">
-            <input type="checkbox" id="has-roommates">
-            <span>Split rent &amp; utilities with roommates</span>
-          </label>
-        </div>
-        
-        <div id="roommates-block" class="roommates-block hidden">
-          <div class="field-row">
-            <label for="split-method">Split method</label>
-            <select id="split-method">
-              <option value="equal">Equal split</option>
-              <option value="income">By income share</option>
+        <div class="header-controls">
+          <div class="currency-select-wrap">
+            <label for="currency-picker">Currency:</label>
+            <select id="currency-picker" class="currency-select">
+              <option value="₹" selected>₹ INR (Rupee)</option>
+              <option value="$">$ USD (Dollar)</option>
+              <option value="€">€ EUR (Euro)</option>
+              <option value="£">£ GBP (Pound)</option>
             </select>
           </div>
 
-          <div id="roommate-rows" class="roommate-rows"></div>
+          <!-- Dark Theme Toggle Button -->
+          <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" title="Toggle Dark/Light Mode" aria-label="Toggle theme">
+            <span class="theme-icon" id="theme-icon">🌙</span>
+            <span class="theme-text" id="theme-text">Dark</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
 
-          <button type="button" id="add-roommate" class="btn-ghost">+ Add roommate</button>
+  <main class="container">
+    <!-- Homepage Hero & Role Selection (First View) -->
+    <section class="hero-section">
+      <h2 class="hero-title">Fair & Accurate <span>Room & Bill Splitting</span></h2>
+      <p class="hero-desc">
+        Select who you are below to get started. You will be able to configure the number of rooms booked, specify how many persons stay in each room, and split rent and utilities accurately.
+      </p>
+
+      <!-- Role Selector -->
+      <div class="role-picker" id="role-picker-container">
+        <div class="role-card" id="role-owner-card" data-role="owner" role="button" tabindex="0" title="Click to select Room Provider / Owner mode">
+          <span class="role-cta-btn">
+            <span class="cta-text">Click Here</span>
+            <span class="cta-arrow">➜</span>
+          </span>
+          <div class="role-icon">🏢</div>
+          <div class="role-info">
+            <h3 class="role-title">Room Provider / Owner</h3>
+            <p class="role-desc">I manage or rent out rooms/properties. I want to configure rooms, specify tenants per room, and generate bills.</p>
+          </div>
+          <div class="role-bottom-action">
+            <span class="role-bottom-pill">Select Provider Mode ➜</span>
+          </div>
         </div>
 
-        <button type="submit" class="btn-stamp-action">Calculate</button>
-      </form>
+        <div class="role-card" id="role-tenant-card" data-role="tenant" role="button" tabindex="0" title="Click to select Tenant / Room Booker mode">
+          <span class="role-cta-btn">
+            <span class="cta-text">Click Here</span>
+            <span class="cta-arrow">➜</span>
+          </span>
+          <div class="role-icon">🤝</div>
+          <div class="role-info">
+            <h3 class="role-title">Tenant / Room Booker</h3>
+            <p class="role-desc">We are booking/renting rooms together. I want to split rent and services fairly based on who stays in which room.</p>
+          </div>
+          <div class="role-bottom-action">
+            <span class="role-bottom-pill">Select Tenant Mode ➜</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Role Banner (Visible after selection) -->
+      <div class="role-active-banner" id="role-active-banner" style="display: none;">
+        <div class="role-active-text">
+          <span id="role-active-icon">🏢</span>
+          <span>Currently Configuring as: <strong id="role-active-title">Room Provider / Owner</strong></span>
+        </div>
+        <button type="button" class="btn-switch-role" id="btn-switch-role">
+          ⇄ Change Role
+        </button>
+      </div>
     </section>
 
-    <!-- RIGHT: RESULT SIDE -->
-    <section class="ledger__result" aria-label="Results">
-      <div class="entry-head">
-        <span class="entry-head__title">Statement</span>
+    <!-- Interactive Homepage Explainer & Live Simulator (First View) -->
+    <section class="explainer-section" id="explainer-section">
+      <div class="explainer-header">
+        <span class="explainer-badge">Rent Split Pro</span>
+        <h3 class="explainer-title">How RentSplit Pro Works</h3>
+        <p class="explainer-subtitle">
+          See how our intelligent per-room occupancy and bill splitting algorithms distribute costs fairly.
+        </p>
       </div>
 
-      <div id="empty-state" class="empty-state">
-        <p>Fill in your figures and press <strong>Calculate</strong>.<br>Your statement will be entered here.</p>
+      <!-- Live Interactive Simulator Playground -->
+      <div class="simulator-box">
+        <div class="simulator-title-bar">
+          <h3><span>⚡</span> Try the Live Split Simulator</h3>
+          <span class="sim-preview-badge">Interactive Preview</span>
+        </div>
+
+        <div class="simulator-grid">
+          <!-- Left Column: Primary Bill Inputs -->
+          <div class="sim-controls">
+            <!-- Box 1: Room Rent Amount Box -->
+            <div class="sim-card-box">
+              <div class="sim-box-header">
+                <span class="sim-box-title">Room Rent Amount</span>
+                <span id="sim-rent-val" class="sim-val-pill">₹20,000</span>
+              </div>
+              <div class="sim-slider-container">
+                <input type="range" class="sim-slider" id="sim-rent-slider" min="5000" max="60000" step="1000" value="20000">
+              </div>
+            </div>
+
+            <!-- Box 2: Persons in this Room Box -->
+            <div class="sim-card-box">
+              <div class="sim-box-header">
+                <span class="sim-box-title">Persons in this Room</span>
+                <span class="sim-badge-hint">Select Occupants</span>
+              </div>
+              <div class="sim-roommates-picker">
+                <button type="button" class="sim-btn-rm active" data-count="2">2 Persons</button>
+                <button type="button" class="sim-btn-rm" data-count="3">3 Persons</button>
+                <button type="button" class="sim-btn-rm" data-count="4">4 Persons</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Splitting Method above Simulated Room Bill Split -->
+          <div class="sim-output-pane">
+            <!-- Box 3: Splitting Method Box (Text & Buttons in Single Box) -->
+            <div class="sim-card-box">
+              <div class="sim-box-header">
+                <span class="sim-box-title">Splitting Method</span>
+                <span class="sim-badge-hint">Calculation Rule</span>
+              </div>
+              <div class="sim-mode-toggle">
+                <button type="button" class="sim-mode-btn active" id="sim-mode-equal">Equal Split</button>
+                <button type="button" class="sim-mode-btn" id="sim-mode-income">Split by Income %</button>
+              </div>
+            </div>
+
+            <!-- Box 4: Simulated Room Bill Split Live Output Box -->
+            <div class="sim-card-box sim-output-card">
+              <div class="sim-box-header sim-output-header">
+                <span class="sim-box-title">Simulated Room Bill Split</span>
+                <span id="sim-status-tag" class="sim-status-tag">Equal (50% Each)</span>
+              </div>
+              <div class="sim-persons-list" id="sim-persons-list">
+                <!-- Dynamically generated live preview rows -->
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div id="error-box" class="error-box hidden"></div>
-
-      <div id="result" class="result hidden">
-        <div class="stamp-wrap">
-          <div id="stamp" class="stamp">AFFORDABLE</div>
+      <!-- Feature Explainers Grid -->
+      <div class="features-grid">
+        <div class="feature-item-card">
+          <span class="feat-icon">🚪</span>
+          <h4 class="feat-title">Room-by-Room Occupancy</h4>
+          <p class="feat-desc">Specify how many persons stay in each room. The bill for each room & its services splits strictly among its occupants.</p>
         </div>
 
-        <table class="ledger-table">
-          <tbody>
-            <tr><td>Rent, share of income</td><td id="r-percentage" class="num">—</td></tr>
-            <tr><td>Total monthly expenses</td><td id="r-total" class="num">—</td></tr>
-            <tr><td>Remaining Balance</td><td id="r-remaining" class="num">—</td></tr>
-          </tbody>
-        </table>
-
-        <p id="r-tip" class="tip"></p>
-
-        <div id="split-section" class="split-section hidden">
-          <h3>Individual breakdown</h3>
-          <table class="ledger-table" id="split-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th class="num">Income</th>
-                <th class="num">Rent % of income</th>
-                <th class="num">Total expenses</th>
-                <th class="num">Remaining</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
+        <div class="feature-item-card">
+          <span class="feat-icon">⚖️</span>
+          <h4 class="feat-title">Dual Splitting Modes</h4>
+          <p class="feat-desc">Choose between Equal Split (1 ÷ N) or Proportional Income Split based on roommates' monthly salaries.</p>
         </div>
 
-        <p class="autosave-note">✓ Report ready for export</p>
+        <div class="feature-item-card">
+          <span class="feat-icon">💳</span>
+          <h4 class="feat-title">Live Payment Tracking</h4>
+          <p class="feat-desc">Track how much each person has paid, see real-time balance dues, and status badges (Paid, Partial, Unpaid).</p>
+        </div>
 
-        <div class="actions">
-          <button type="button" id="show-expense-btn" class="btn-ghost">Show Expense Breakdown</button>
-          <button type="button" id="download-report-btn" class="btn-ghost">Download report</button>
+        <div class="feature-item-card">
+          <span class="feat-icon">📥</span>
+          <h4 class="feat-title">Document Exports</h4>
+          <p class="feat-desc">Download statements as official PDF invoices, formatted Excel CSV spreadsheets, or WhatsApp text receipts.</p>
         </div>
       </div>
     </section>
 
+    <!-- Step 2: Configuration Form (Appears ONLY after role is selected) -->
+    <section class="form-section" id="setup-form-section" style="display: none;">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="badge-step">Step 2</span>
+            <div>
+              <h3 class="card-title" id="form-header-title">Room & Occupancy Configuration</h3>
+              <p class="card-subtitle">Set up the number of rooms, persons per room, rent, duration, and services.</p>
+            </div>
+          </div>
+          <button type="button" class="btn-add-room-compact" id="btn-add-room-top">
+            <span class="btn-add-room-icon">+</span>
+            <span>Add Room</span>
+          </button>
+        </div>
+
+        <div class="card-body">
+          <!-- Upfront Question: Number of Rooms & Property Name -->
+          <div class="room-setup-banner">
+            <div class="room-setup-question">
+              <h4>How many rooms are you booking / managing?</h4>
+              <p>Select or enter the total number of rooms. You will then specify occupants and bills for each room.</p>
+            </div>
+
+            <div class="quick-room-picker">
+              <button type="button" class="btn-quick-room" data-rooms="1">1 Room</button>
+              <button type="button" class="btn-quick-room active" data-rooms="2">2 Rooms</button>
+              <button type="button" class="btn-quick-room" data-rooms="3">3 Rooms</button>
+              <button type="button" class="btn-quick-room" data-rooms="4">4 Rooms</button>
+            </div>
+          </div>
+
+          <div class="form-grid property-grid">
+            <div class="form-group">
+              <label class="form-label" for="input-property-name">Property / Booking Reference Name</label>
+              <input type="text" id="input-property-name" class="form-input" placeholder="e.g. Sunrise Apartments / Flat 402, Skyline Residency">
+            </div>
+          </div>
+
+          <!-- Dynamic Container for Room Boxes -->
+          <div class="rooms-list" id="rooms-container">
+            <!-- Room boxes will be injected here via JavaScript -->
+          </div>
+
+          <button type="button" class="btn-add-room" id="btn-add-room-bottom">
+            <span class="btn-add-room-icon">+</span>
+            <span class="btn-add-room-text">Add Another Room / Unit</span>
+            <span class="btn-add-room-badge">+ New Room</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 3: Calculate Trigger Bar -->
+      <div class="calculate-bar">
+        <button type="button" class="btn-calc" id="btn-calculate">
+          <span>⚡</span> Calculate & Generate Bill Breakdown
+        </button>
+      </div>
+    </section>
+
+    <!-- Step 4: Results & Itemized Person-Wise Breakdown Menu (Visible ONLY after Calculate is clicked) -->
+    <section class="results-section" id="results-section">
+      <!-- Summary Metrics Banner -->
+      <div class="summary-banner">
+        <div class="summary-stat-card">
+          <div class="stat-icon rent">🏠</div>
+          <div class="stat-details">
+            <h4>Total Rent</h4>
+            <div class="stat-amount" id="stat-total-rent">₹0.00</div>
+          </div>
+        </div>
+
+        <div class="summary-stat-card">
+          <div class="stat-icon deposit">🔒</div>
+          <div class="stat-details">
+            <h4>Security Deposit</h4>
+            <div class="stat-amount" id="stat-total-deposit">₹0.00</div>
+          </div>
+        </div>
+
+        <div class="summary-stat-card">
+          <div class="stat-icon utilities">💡</div>
+          <div class="stat-details">
+            <h4>Total Utilities</h4>
+            <div class="stat-amount" id="stat-total-utilities">₹0.00</div>
+          </div>
+        </div>
+
+        <div class="summary-stat-card">
+          <div class="stat-icon grand">💰</div>
+          <div class="stat-details">
+            <h4>Grand Total Due</h4>
+            <div class="stat-amount" id="stat-grand-total">₹0.00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stay Period & Meta Information -->
+      <div class="stay-meta-box" id="stay-meta-box">
+        <div class="stay-meta-tag" id="meta-booking-dates">
+          <span>📅</span> <strong>Stay Period:</strong> <span id="meta-start-to-end">01 Sep 2026 ➔ 30 Nov 2026</span> (<span id="meta-months-count">3 Months</span>)
+        </div>
+        <div class="stay-meta-tag" id="meta-split-info">
+          <span>⚖️</span> <strong>Split Mode:</strong> <span id="meta-split-name">Per-Room Occupancy Split</span>
+        </div>
+        <div class="stay-meta-tag">
+          <span>👥</span> <strong>Total People:</strong> <span id="meta-people-count">0</span>
+        </div>
+      </div>
+
+      <!-- Section Title -->
+      <div class="breakdown-header">
+        <div>
+          <h3 class="breakdown-title">
+            Person-Wise Itemized Bill Breakdown & Payment Tracker
+          </h3>
+          <p class="breakdown-subtitle">
+            Each person's bill is calculated strictly based on their assigned room and services. Record payments and download statements below.
+          </p>
+        </div>
+      </div>
+
+      <!-- Person Breakdown Cards Container (Used for UI & PDF capture) -->
+      <div id="pdf-export-container">
+        <!-- Standalone Dedicated Invoice Document (Rendered for PDF Export & Print Only) -->
+        <div id="standalone-invoice-document" style="display: none;"></div>
+
+        <div class="breakdown-grid" id="persons-breakdown-grid">
+          <!-- Dynamic person breakdown cards with row-wise service costs & payment boxes -->
+        </div>
+      </div>
+
+      <!-- Step 5: Document Export Toolbar -->
+      <div class="export-toolbar">
+        <div class="export-info">
+          <h4>Download & Share Bill Statement</h4>
+          <p>Export your split bill calculations and payment records in standard document formats.</p>
+        </div>
+        <div class="export-buttons export-buttons-group">
+          <button type="button" class="btn-export btn-export-pdf pdf" id="btn-download-pdf" title="Download PDF Bill Statement">
+            <span class="dl-symbol">📥</span>
+            <span class="dl-text">PDF Format</span>
+          </button>
+          <button type="button" class="btn-export btn-export-csv csv" id="btn-download-csv" title="Download Excel Spreadsheet">
+            <span class="dl-symbol">📥</span>
+            <span class="dl-text">Excel Format</span>
+          </button>
+          <button type="button" class="btn-export btn-export-text text" id="btn-download-text" title="Copy or Download Text Summary">
+            <span class="dl-symbol">📥</span>
+            <span class="dl-text">Text Format</span>
+          </button>
+          <button type="button" class="btn-export btn-export-print print" id="btn-print" title="Print Invoice Statement">
+            <span class="dl-symbol">🖨️</span>
+            <span class="dl-text">Print Format</span>
+          </button>
+        </div>
+      </div>
+    </section>
   </main>
 
-</div>
-<div id="Expense" class="expense-breakdown hidden">
-  <div class="expense-breakdown__inner">
-    <div class="entry-head">
-      <span class="entry-head__title">Expense Breakdown</span>
-    </div>
-    <div class="table-scroll">
-      <table class="ledger-table" id="expense-breakdown-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th class="num">Income</th>
-            <th class="num">Rent share</th>
-            <th class="num">Utilities share</th>
-            <th class="num">Food share</th>
-            <th class="num">Security share</th>
-            <th class="num">Other share</th>
-            <th class="num">Total expenses</th>
-            <th class="num">Rent % of income</th>
-            <th class="num">Remaining</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-<div class="footer">
-  <p>Future updates include the amount &amp; bill paid by respective roommates &amp; their expense record will be logged respectively.</p>
-</div>
-<script src="static/script.js"></script>
+  <!-- Application Logic Scripts -->
+  <script src="js/calculator.js"></script>
+  <script src="js/exporter.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
