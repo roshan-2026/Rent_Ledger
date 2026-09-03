@@ -163,7 +163,7 @@ const Calculator = {
         const payments = Array.isArray(person.payments) ? person.payments : [];
         const totalPaidFromLedger = payments.reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0);
         const amountPaid = payments.length > 0 ? totalPaidFromLedger : (parseFloat(person.amountPaid) || 0);
-        const balance = Math.round((totalDue - amountPaid) * 100) / 100;
+        const balance = Math.max(0, Math.round((totalDue - amountPaid) * 100) / 100);
 
         let status = 'unpaid';
         if (amountPaid >= totalDue && totalDue > 0) {
@@ -173,7 +173,7 @@ const Calculator = {
         }
 
         const personObj = {
-          id: person.id || `r${roomIdx}_p${pIdx}`,
+          id: person.id || `p_r${roomIdx + 1}_${pIdx + 1}_${Math.random().toString(36).substr(2, 7)}`,
           name: pName,
           roomName: roomName,
           income: pIncome,
@@ -288,7 +288,7 @@ const Calculator = {
 
       const totalDue = rentShareTotal + depositShare + utilitiesShareTotal;
       const amountPaid = parseFloat(rm.amountPaid) || 0;
-      const balance = Math.round((totalDue - amountPaid) * 100) / 100;
+      const balance = Math.max(0, Math.round((totalDue - amountPaid) * 100) / 100);
 
       let status = 'unpaid';
       if (amountPaid >= totalDue && totalDue > 0) {
@@ -298,7 +298,7 @@ const Calculator = {
       }
 
       return {
-        id: rm.id || `rm_${idx}`,
+        id: rm.id || `rm_${idx + 1}_${Math.random().toString(36).substr(2, 7)}`,
         name: name,
         roomName: flatName,
         income: income,

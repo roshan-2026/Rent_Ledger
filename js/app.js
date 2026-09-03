@@ -1,8 +1,3 @@
-/**
- * RentSplit Pro - Application Controller
- * Manages State, Dynamic DOM generation, Event Listeners,
- * Room Occupancy splits, Interactive Simulator, and Payment Tracking.
- */
 
 class RentSplitApp {
   constructor() {
@@ -28,6 +23,12 @@ class RentSplitApp {
 
   getTodayDateString() {
     return new Date().toISOString().split('T')[0];
+  }
+
+  generateUniqueId(prefix = 'id') {
+    this._uidCounter = (this._uidCounter || 0) + 1;
+    const rand = Math.random().toString(36).substring(2, 9);
+    return `${prefix}_${Date.now()}_${this._uidCounter}_${rand}`;
   }
 
   init() {
@@ -306,8 +307,9 @@ class RentSplitApp {
   }
 
   createEmptyRoom(roomIndex) {
+    const roomId = this.generateUniqueId(`room_r${roomIndex}`);
     return {
-      id: `room_${Date.now()}_${roomIndex}`,
+      id: roomId,
       name: '',
       rent: '',
       deposit: '',
@@ -318,10 +320,10 @@ class RentSplitApp {
       internet: '',
       otherServices: '',
       splitMode: 'equal',
-      // Default: 2 persons in this room with clean empty placeholders
+      // Default: 2 persons in this room with clean empty placeholders and unique IDs
       persons: [
-        { id: `p_${Date.now()}_1`, name: '', income: '', amountPaid: '', paymentDate: '', paymentMethod: 'UPI' },
-        { id: `p_${Date.now()}_2`, name: '', income: '', amountPaid: '', paymentDate: '', paymentMethod: 'UPI' }
+        { id: this.generateUniqueId(`p_r${roomIndex}_1`), name: '', income: '', amountPaid: '', paymentDate: '', paymentMethod: 'UPI', payments: [] },
+        { id: this.generateUniqueId(`p_r${roomIndex}_2`), name: '', income: '', amountPaid: '', paymentDate: '', paymentMethod: 'UPI', payments: [] }
       ]
     };
   }
@@ -584,12 +586,13 @@ class RentSplitApp {
         
         while (room.persons.length < count) {
           room.persons.push({
-            id: `p_${Date.now()}_${room.persons.length + 1}`,
+            id: this.generateUniqueId(`p_r${rIdx + 1}_${room.persons.length + 1}`),
             name: '',
             income: '',
             amountPaid: '',
             paymentDate: '',
-            paymentMethod: 'UPI'
+            paymentMethod: 'UPI',
+            payments: []
           });
         }
         while (room.persons.length > count) {
@@ -605,12 +608,13 @@ class RentSplitApp {
         const rIdx = parseInt(e.currentTarget.dataset.roomIdx, 10);
         const room = this.state.rooms[rIdx];
         room.persons.push({
-          id: `p_${Date.now()}_${room.persons.length + 1}`,
+          id: this.generateUniqueId(`p_r${rIdx + 1}_${room.persons.length + 1}`),
           name: '',
           income: '',
           amountPaid: '',
           paymentDate: '',
-          paymentMethod: 'UPI'
+          paymentMethod: 'UPI',
+          payments: []
         });
         this.renderRooms();
       });
@@ -872,7 +876,9 @@ class RentSplitApp {
               + Record Payment / Installment:
             </div>
             <div class="add-tx-row">
-              <input type="number" class="payment-input-sm tx-amt-input" id="tx-amt-${person.id}" placeholder="Amount" min="1" step="any">
+              <input type="number" class="payment-input-sm tx-amt-input" id="tx-amt-${person.id}" 
+                placeholder="${person.balance <= 0 ? 'Fully Cleared ✓' : `Amount (Max: ${Calculator.formatCurrency(person.balance, curr)})`}" 
+                min="0.01" max="${person.balance}" step="any" ${person.balance <= 0 ? 'disabled' : ''}>
               <input type="date" class="payment-input-sm tx-date-input" id="tx-date-${person.id}" value="${this.getTodayDateString()}">
               <select class="payment-input-sm tx-method-select" id="tx-method-${person.id}">
                 <option value="UPI">UPI / GPay</option>
@@ -881,8 +887,9 @@ class RentSplitApp {
                 <option value="Card">Card</option>
                 <option value="Cheque">Cheque</option>
               </select>
-              <button type="button" class="btn-add-tx btn-record-tx" data-person-id="${person.id}">
-                + Record
+              <button type="button" class="btn-add-tx btn-record-tx" data-person-id="${person.id}" 
+                ${person.balance <= 0 ? 'disabled style="opacity:0.6; cursor:not-allowed;"' : ''}>
+                ${person.balance <= 0 ? 'Paid in Full ✓' : '+ Record'}
               </button>
             </div>
           </div>
@@ -921,22 +928,69 @@ class RentSplitApp {
   }
 
   bindPaymentTrackerEvents() {
+    // Live validation feedback on amount inputs to guide user on maximum remaining balance
+    document.querySelectorAll('.tx-amt-input').forEach(inp => {
+      inp.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        const maxVal = parseFloat(e.target.max);
+        if (!isNaN(val) && !isNaN(maxVal) && val > maxVal) {
+          e.target.style.borderColor = 'var(--danger)';
+          e.target.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.2)';
+        } else {
+          e.target.style.borderColor = '';
+          e.target.style.boxShadow = '';
+        }
+      });
+    });
+
     // Record payment button click
     document.querySelectorAll('.btn-record-tx').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const personId = e.currentTarget.dataset.personId;
-        const amtInput = document.getElementById(`tx-amt-${personId}`);
-        const dateInput = document.getElementById(`tx-date-${personId}`);
-        const methodSelect = document.getElementById(`tx-method-${personId}`);
+        const row = e.currentTarget.closest('.add-tx-row');
+        const card = e.currentTarget.closest('.person-card') || document;
+        const amtInput = row ? row.querySelector('.tx-amt-input') : card.querySelector(`#tx-amt-${personId}`);
+        const dateInput = row ? row.querySelector('.tx-date-input') : card.querySelector(`#tx-date-${personId}`);
+        const methodSelect = row ? row.querySelector('.tx-method-select') : card.querySelector(`#tx-method-${personId}`);
+
+        if (!this.currentReport) {
+          alert('Please calculate the bill before recording payments!');
+          return;
+        }
+
+        const person = this.currentReport.allPersons.find(p => p.id === personId);
+        if (!person) {
+          alert('Unable to locate occupant record. Please recalculate the bill.');
+          return;
+        }
 
         const amount = parseFloat(amtInput ? amtInput.value : 0);
-        if (!amount || amount <= 0) {
-          alert('Please enter a valid payment amount!');
+        if (isNaN(amount) || amount <= 0) {
+          alert('Please enter a valid positive payment amount!');
           if (amtInput) amtInput.focus();
           return;
         }
 
-        const date = dateInput ? dateInput.value : this.getTodayDateString();
+        // Real-time remaining balance validation: strictly prevent overpayment
+        const currentBalance = Math.round((person.totalDue - person.amountPaid) * 100) / 100;
+
+        if (currentBalance <= 0) {
+          alert(`All dues for ${person.name} have already been fully cleared! Remaining balance is ${Calculator.formatCurrency(0, this.currency)}.`);
+          if (amtInput) amtInput.value = '';
+          this.refreshPersonPaymentUI(person);
+          return;
+        }
+
+        if (amount > currentBalance) {
+          alert(`Payment amount (${Calculator.formatCurrency(amount, this.currency)}) cannot exceed the remaining balance due of ${Calculator.formatCurrency(currentBalance, this.currency)} for ${person.name}!\n\nPlease enter an amount up to ${Calculator.formatCurrency(currentBalance, this.currency)}.`);
+          if (amtInput) {
+            amtInput.value = currentBalance;
+            amtInput.focus();
+          }
+          return;
+        }
+
+        const date = dateInput && dateInput.value ? dateInput.value : this.getTodayDateString();
         const method = methodSelect ? methodSelect.value : 'UPI';
 
         this.addPaymentTransaction(personId, amount, date, method);
@@ -964,7 +1018,7 @@ class RentSplitApp {
     }
 
     const newTx = {
-      id: `tx_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+      id: this.generateUniqueId('tx'),
       amount: amount,
       date: date || this.getTodayDateString(),
       method: method || 'UPI'
@@ -1002,7 +1056,8 @@ class RentSplitApp {
     const curr = this.currency;
     const totalPaid = (person.payments || []).reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0);
     person.amountPaid = totalPaid;
-    person.balance = Math.round((person.totalDue - totalPaid) * 100) / 100;
+    // Guaranteed strictly non-negative balance
+    person.balance = Math.max(0, Math.round((person.totalDue - totalPaid) * 100) / 100);
 
     let status = 'unpaid';
     let statusText = 'UNPAID';
@@ -1051,6 +1106,37 @@ class RentSplitApp {
           this.deletePaymentTransaction(pId, tId);
         });
       });
+    }
+
+    // Update payment input field and record button state based on remaining balance
+    const amtInput = document.getElementById(`tx-amt-${person.id}`);
+    const recordBtn = document.querySelector(`.btn-record-tx[data-person-id="${person.id}"]`);
+    if (amtInput) {
+      if (person.balance <= 0) {
+        amtInput.value = '';
+        amtInput.disabled = true;
+        amtInput.placeholder = 'Fully Cleared ✓';
+        amtInput.style.borderColor = '';
+        amtInput.style.boxShadow = '';
+        if (recordBtn) {
+          recordBtn.disabled = true;
+          recordBtn.textContent = 'Paid in Full ✓';
+          recordBtn.style.opacity = '0.6';
+          recordBtn.style.cursor = 'not-allowed';
+        }
+      } else {
+        amtInput.disabled = false;
+        amtInput.placeholder = `Amount (Max: ${Calculator.formatCurrency(person.balance, curr)})`;
+        amtInput.max = person.balance;
+        amtInput.style.borderColor = '';
+        amtInput.style.boxShadow = '';
+        if (recordBtn) {
+          recordBtn.disabled = false;
+          recordBtn.textContent = '+ Record';
+          recordBtn.style.opacity = '';
+          recordBtn.style.cursor = '';
+        }
+      }
     }
 
     // Re-render standalone invoice so PDF & Print immediately include the transactions
